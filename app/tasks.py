@@ -65,15 +65,15 @@ def create_task():
 def update_task(task_id):
     task = [task for task in tasks if task['id'] == task_id]
     if len(task) == 0:
-        abort(404)
+        raise InvalidId('No task Id given', status_code=404)
     if not request.json:
-        abort(400)
+        raise InvalidId('Invalid JSON', status_code=400)
     if 'title' in request.json and type(request.json['title']) != unicode:
-        abort(400)
+        raise InvalidId('Invalid JSON (title)', status_code=400)
     if 'description' in request.json and type(request.json['description']) is not unicode:
-        abort(400)
+        raise InvalidId('Invalid JSON (description)', status_code=400)
     if 'done' in request.json and type(request.json['done']) is not bool:
-        abort(400)
+        raise InvalidId('Invalid JSON (done)', status_code=400)
     task[0]['title'] = request.json.get('title', task[0]['title'])
     task[0]['description'] = request.json.get('description', task[0]['description'])
     task[0]['done'] = request.json.get('done', task[0]['done'])
@@ -83,7 +83,7 @@ def update_task(task_id):
 def delete_task(task_id):
     task = [task for task in tasks if task['id'] == task_id]
     if len(task) == 0:
-        abort(404)
+        raise InvalidId('No task Id given', status_code=404)
     tasks.remove(task[0])
     return jsonify({'result': True})
  
