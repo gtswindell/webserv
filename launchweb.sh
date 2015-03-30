@@ -1,4 +1,4 @@
 #!/bin/sh
 
-sudo python /home/pi/projects/python/webserv/run.py &
+sudo python /home/glen/projects/webserv/run.py &
 
