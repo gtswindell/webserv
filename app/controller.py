@@ -1,8 +1,13 @@
 from app import app
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from datetime import datetime
 
 import RPi.GPIO as GPIO
 import Adafruit_DHT
+
+import sqlite3 as lite
+import sys
+
 
 ledPin = 25
 dht22 = 4
@@ -10,6 +15,7 @@ dht22 = 4
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(ledPin, GPIO.OUT)
+
 
 @app.route('/controller/api/v1.0/led', methods=['GET'])
 def ledStatus():
@@ -21,6 +27,24 @@ def ledStatus():
 def switchLed(led_state):
     GPIO.output(ledPin, led_state)
     return ledStatus()
+
+@app.route('/controller/api/v1.0/temperature', methods=['POST'])
+def setTemperature():
+        area = request.json['area']
+        temperature = request.json['temperature']
+	humidity = request.json['humidity']
+	con = lite.connect('/home/glen/projects/webserv/app/data/temps.dat')
+
+	with con:
+		try:
+			cur = con.cursor()
+			cur.execute("INSERT INTO temperature VALUES (?, ?, ?, ?)", (area, datetime.now(), temperature, humidity))
+			con.commit()
+			return jsonify({'state':'ok'})
+		except Exception as inst:
+			con.rollback()
+			return jsonify({'exception': inst})
+	con.close()
 
 @app.route('/controller/api/v1.0/temperature/<int:area>', methods=['GET'])
 def getTemperature(area):
