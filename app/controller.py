@@ -48,12 +48,28 @@ def setTemperature():
 
 @app.route('/controller/api/v1.0/temperature/<int:area>', methods=['GET'])
 def getTemperature(area):
-	try:
-		humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, area)
-		if ((humidity <> None) and (temperature <> None)):
-			return jsonify({'humidity': '{0:0.1f}'.format(humidity), 'temperature': '{0:0.1f}'.format(temperature)})
-		else:
-			return jsonify({'error': 'No data returned'})
-	except RuntimeError:
-		type, value, traceback = sys.exc_info()
-		return jsonify({'Error': value.strerror})
+	#try:
+	#	humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, area)
+	#	if ((humidity <> None) and (temperature <> None)):
+	#		return jsonify({'humidity': '{0:0.1f}'.format(humidity), 'temperature': '{0:0.1f}'.format(temperature)})
+	#	else:
+	#		return jsonify({'error': 'No data returned'})
+	#except RuntimeError:
+	#	type, value, traceback = sys.exc_info()
+	#	return jsonify({'Error': value.strerror})
+    con = lite.connect('/home/glen/projects/webserv/app/data/temps.dat')
+    with con:
+        try:
+            cur = con.cursor()
+            cur.execute("SELECT temp, humidity from temperature where station = ? order by dt DESC", (area,))
+            row = cur.fetchone()
+            if row is not None:
+                humidity = row[1]
+                temp = row[0]
+                return jsonify({'station': area, 'humidity': humidity, 'temperature': temp})
+            else:
+                return  jsonify({'error': 'No data returned'})
+        except Exception as inst:
+            type, value, traceback = sys.exc_info()
+            return jsonify({'Error': inst})
+         
