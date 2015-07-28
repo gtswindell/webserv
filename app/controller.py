@@ -69,7 +69,7 @@ def getTemperature(area):
                 return jsonify({'station': area, 'humidity': humidity, 'temperature': temp})
             else:
                 return  jsonify({'error': 'No data returned'})
-        except Exception as inst:
+        except RuntimeError:
             type, value, traceback = sys.exc_info()
-            return jsonify({'Error': inst})
+            return jsonify({'Error': value.strerror})
          
